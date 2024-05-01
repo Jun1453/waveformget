@@ -1,0 +1,17 @@
+# config, cache
+__pycache__
+.vscode
+.DS_Store
+
+# env
+.venv
+
+# data
+downloads_*
+test*
+
+# table
+*.tbl
+
+# log
+*.log
