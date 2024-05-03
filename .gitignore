@@ -7,11 +7,16 @@ __pycache__
 .venv
 
 # data
+gcmt*.npy
 downloads_*
 test*
+stations*
+waveforms*
+rawdata*
 
 # table
 *.tbl
 
 # log
 *.log
+nohup.out
