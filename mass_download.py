@@ -58,6 +58,18 @@ if __name__ == '__main__':
     events = np.load('./gcmt_mw.npy', allow_pickle=True)
     # origin_time = UTCDateTime(2011, 3, 11, 5, 47, 32)
     # origin_time = UTCDateTime("2011-01-01T01:56:07.800000Z")
-    for event in events[33872:36100]:
+    # for event in events[33872:36100]: # year 2011
+    for event in events[36100:38386]: # year 2012
+    # for event in events[38386:40514]: # year 2013
+    # for event in events[40514:42977]: # year 2014
+    # for event in events[42977:45149]: # year 2015
+    # for event in events[45149:47388]: # year 2016
+    # for event in events[47388:49525]: # year 2017
+    # for event in events[49525:51795]: # year 2018
+    # for event in events[51795:54224]: # year 2019
+    # for event in events[54224:56611]: # year 2020
+    # for event in events[56611:59459]: # year 2021
+    # for event in events[59459:62117]: # year 2022
+    # for event in events[62117:]: # year 2023
         if event.magnitude < 5.5: continue
         download_event(event.srctime)
