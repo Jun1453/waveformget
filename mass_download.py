@@ -4,6 +4,7 @@ from obspy import UTCDateTime
 from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
 def download_event(origin_time):
+    origin_time.precision = 3
     fn_starttime_full = lambda srctime: srctime - 0.5 * 60 * 60
     fn_endtime_full = lambda srctime: srctime + 2 * 60 * 60 + 1
 
@@ -59,9 +60,9 @@ if __name__ == '__main__':
     # origin_time = UTCDateTime(2011, 3, 11, 5, 47, 32)
     # origin_time = UTCDateTime("2011-01-01T01:56:07.800000Z")
     # for event in events[33872:36100]: # year 2011
-    for event in events[36100:38386]: # year 2012
+    # for event in events[36100:38386]: # year 2012
     # for event in events[38386:40514]: # year 2013
-    # for event in events[40514:42977]: # year 2014
+    for event in events[40514:42977]: # year 2014
     # for event in events[42977:45149]: # year 2015
     # for event in events[45149:47388]: # year 2016
     # for event in events[47388:49525]: # year 2017
