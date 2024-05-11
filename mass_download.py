@@ -1,9 +1,28 @@
+import sys
 import numpy as np
 from data_class import *
 from obspy import UTCDateTime
 from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
-def download_event(origin_time):
+init_event_num = {
+    2010: 32020,
+    2011: 33872,
+    2012: 36100,
+    2013: 38386,
+    2014: 40514,
+    2015: 42977,
+    2016: 45149,
+    2017: 47388,
+    2018: 49525,
+    2019: 51795,
+    2020: 54224,
+    2021: 56611,
+    2022: 59459,
+    2023: 62117,
+    2024: None
+}
+
+def download_event(origin_time, init_year=None):
     origin_time.precision = 3
     fn_starttime_full = lambda srctime: srctime - 0.5 * 60 * 60
     fn_endtime_full = lambda srctime: srctime + 2 * 60 * 60 + 1
@@ -51,26 +70,15 @@ def download_event(origin_time):
 
     # The data will be downloaded to the ``./waveforms/`` and ``./stations/``
     # folders with automatically chosen file names.
-    mdl.download(domain, restrictions, mseed_storage=f"/volume1/seismic/rawdata_catalog_mass/{origin_time}/waveforms",
-                stationxml_storage=f"/volume1/seismic/rawdata_catalog_mass/{origin_time}/stations")
+    mdl.download(domain, restrictions, mseed_storage=f"/volume1/seismic/rawdata_catalog_mass/{f'{init_year}/' if init_year else ''}{origin_time}/waveforms",
+                stationxml_storage=f"/volume1/seismic/rawdata_catalog_mass/{f'{init_year}/' if init_year else ''}{origin_time}/stations")
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2: raise ValueError("year is required in args")
     events = np.load('./gcmt_mw.npy', allow_pickle=True)
     # origin_time = UTCDateTime(2011, 3, 11, 5, 47, 32)
     # origin_time = UTCDateTime("2011-01-01T01:56:07.800000Z")
-    # for event in events[33872:36100]: # year 2011
-    # for event in events[36100:38386]: # year 2012
-    # for event in events[38386:40514]: # year 2013
-    for event in events[40514:42977]: # year 2014
-    # for event in events[42977:45149]: # year 2015
-    # for event in events[45149:47388]: # year 2016
-    # for event in events[47388:49525]: # year 2017
-    # for event in events[49525:51795]: # year 2018
-    # for event in events[51795:54224]: # year 2019
-    # for event in events[54224:56611]: # year 2020
-    # for event in events[56611:59459]: # year 2021
-    # for event in events[59459:62117]: # year 2022
-    # for event in events[62117:]: # year 2023
+    for event in events[init_event_num[int(sys.argv[1])]:init_event_num[int(sys.argv[1])+1]]: 
         if event.magnitude < 5.5: continue
         download_event(event.srctime)
