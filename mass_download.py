@@ -81,4 +81,4 @@ if __name__ == '__main__':
     # origin_time = UTCDateTime("2011-01-01T01:56:07.800000Z")
     for event in events[init_event_num[int(sys.argv[1])]:init_event_num[int(sys.argv[1])+1]]: 
         if event.magnitude < 5.5: continue
-        download_event(event.srctime)
+        download_event(event.srctime, int(sys.argv[1]))
