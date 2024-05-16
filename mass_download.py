@@ -1,3 +1,4 @@
+import os
 import sys
 import numpy as np
 from data_class import *
@@ -22,7 +23,7 @@ init_event_num = {
     2024: None
 }
 
-def download_event(origin_time, init_year=None):
+def download_event(downloader, origin_time, init_year=None, skip_existing_folder=False):
     origin_time.precision = 3
     fn_starttime_full = lambda srctime: srctime - 0.5 * 60 * 60
     fn_endtime_full = lambda srctime: srctime + 2 * 60 * 60 + 1
@@ -65,13 +66,13 @@ def download_event(origin_time, init_year=None):
         network='AF,AU,BI,BR,C,C8,CB,CD,CK,CN,CR,DK,DW,G,GE,GT,HG,IA,IC,ID,II,IM,IN,IU,MM,MN,MP,MY,NZ,PS,SR,TJ'
         )
 
-    # No specified providers will result in all known ones being queried.
-    mdl = MassDownloader()
+    save_path = f"./rawdata_catalog_mass/{f'{init_year}/' if init_year else ''}{origin_time}"
+    if skip_existing_folder and os.path.exists(save_path): return
 
     # The data will be downloaded to the ``./waveforms/`` and ``./stations/``
     # folders with automatically chosen file names.
-    mdl.download(domain, restrictions, mseed_storage=f"/volume1/seismic/rawdata_catalog_mass/{f'{init_year}/' if init_year else ''}{origin_time}/waveforms",
-                stationxml_storage=f"/volume1/seismic/rawdata_catalog_mass/{f'{init_year}/' if init_year else ''}{origin_time}/stations")
+    downloader.download(domain, restrictions, mseed_storage=f"{save_path}/waveforms",
+                        stationxml_storage=f"{save_path}/stations")
 
 
 if __name__ == '__main__':
@@ -79,6 +80,10 @@ if __name__ == '__main__':
     events = np.load('./gcmt_mw.npy', allow_pickle=True)
     # origin_time = UTCDateTime(2011, 3, 11, 5, 47, 32)
     # origin_time = UTCDateTime("2011-01-01T01:56:07.800000Z")
+
+    # No specified providers will result in all known ones being queried.
+    mdl = MassDownloader()
+    
     for event in events[init_event_num[int(sys.argv[1])]:init_event_num[int(sys.argv[1])+1]]: 
         if event.magnitude < 5.5: continue
-        download_event(event.srctime, int(sys.argv[1]))
+        download_event(mdl, event.srctime, int(sys.argv[1]), skip_existing_folder=True)
