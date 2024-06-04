@@ -23,7 +23,7 @@ init_event_num = {
     2024: None
 }
 
-def download_event(downloader, origin_time, init_year=None, skip_existing_folder=False):
+def download_event(downloader, origin_time, init_year=None, network=None, station=None, save_path=".", skip_existing_folder=False):
     origin_time.precision = 3
     fn_starttime_full = lambda srctime: srctime - 0.5 * 60 * 60
     fn_endtime_full = lambda srctime: srctime + 2 * 60 * 60 + 1
@@ -63,10 +63,11 @@ def download_event(downloader, origin_time, init_year=None, skip_existing_folder
 
         # customized
         # exclude_networks=("AM", "SY")
-        network='AF,AU,BI,BR,C,C8,CB,CD,CK,CN,CR,DK,DW,G,GE,GT,HG,IA,IC,ID,II,IM,IN,IU,MM,MN,MP,MY,NZ,PS,SR,TJ'
+        network=network,
+        station=station
         )
 
-    save_path = f"./rawdata_catalog_mass/{f'{init_year}/' if init_year else ''}{origin_time}"
+    save_path = f"{save_path}/{f'{init_year}/' if init_year else ''}{origin_time}"
     if skip_existing_folder and os.path.exists(save_path): return
 
     # The data will be downloaded to the ``./waveforms/`` and ``./stations/``
@@ -77,13 +78,23 @@ def download_event(downloader, origin_time, init_year=None, skip_existing_folder
 
 if __name__ == '__main__':
     if len(sys.argv) < 2: raise ValueError("year is required in args")
-    events = np.load('./gcmt_mw.npy', allow_pickle=True)
-    # origin_time = UTCDateTime(2011, 3, 11, 5, 47, 32)
-    # origin_time = UTCDateTime("2011-01-01T01:56:07.800000Z")
 
     # No specified providers will result in all known ones being queried.
     mdl = MassDownloader()
-    
-    for event in events[init_event_num[int(sys.argv[1])]:init_event_num[int(sys.argv[1])+1]]: 
-        if event.magnitude < 5.5: continue
-        download_event(mdl, event.srctime, int(sys.argv[1]), skip_existing_folder=True)
+
+    if str(sys.argv[1]).split('.')[-1] == 'npy':
+        events = np.load(str(sys.argv[1]))
+        for event in events:
+            station = ",".join([station.labelsta['name'] for station in event.stations])
+            download_event(mdl, event.srctime, int(sys.argv[1]), station=station, save_path=f"./rawdata_{str(sys.argv[1]).split('.')[-2]}", skip_existing_folder=True)
+
+    else:
+        events = np.load('./gcmt_mw.npy', allow_pickle=True)
+        # origin_time = UTCDateTime(2011, 3, 11, 5, 47, 32)
+        # origin_time = UTCDateTime("2011-01-01T01:56:07.800000Z")
+        network = 'AF,AU,BI,BR,C,C8,CB,CD,CK,CN,CR,DK,DW,G,GE,GT,HG,IA,IC,ID,II,IM,IN,IU,MM,MN,MP,MY,NZ,PS,SR,TJ'
+
+        
+        for event in events[init_event_num[int(sys.argv[1])]:init_event_num[int(sys.argv[1])+1]]: 
+            if event.magnitude < 5.5: continue
+            download_event(mdl, event.srctime, int(sys.argv[1]), network=network, save_path="./rawdata_catalog_mass", skip_existing_folder=True)
