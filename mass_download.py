@@ -86,7 +86,7 @@ if __name__ == '__main__':
         events = np.load(str(sys.argv[1]), allow_pickle=True)
         for event in events:
             station = ",".join([station.labelsta['name'] for station in event.stations])
-            download_event(mdl, event.srctime, int(sys.argv[1]), station=station, save_path=f"./rawdata_{str(sys.argv[1]).split('.')[-2]}", skip_existing_folder=True)
+            download_event(mdl, event.srctime, station=station, save_path=f"./rawdata_{str(sys.argv[1]).split('.')[-2]}", skip_existing_folder=True)
 
     else:
         events = np.load('./gcmt_mw.npy', allow_pickle=True)
