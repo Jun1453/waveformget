@@ -80,7 +80,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2: raise ValueError("year is required in args")
 
     # No specified providers will result in all known ones being queried.
-    mdl = MassDownloader()
+    mdl = MassDownloader(["IRIS"])
 
     if str(sys.argv[1]).split('.')[-1] == 'npy':
         events = np.load(str(sys.argv[1]), allow_pickle=True)
