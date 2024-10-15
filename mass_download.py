@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import numpy as np
 from data_class import *
 from obspy import UTCDateTime
@@ -23,7 +24,7 @@ init_event_num = {
     2024: None
 }
 
-def download_event(downloader, origin_time, init_year=None, network=None, station=None, save_path=".", skip_existing_folder=False):
+def download_event(downloader, origin_time, init_year=None, network=None, station=None, exclude_networks=None, save_path=".", skip_existing_folder=False):
     origin_time.precision = 3
     fn_starttime_full = lambda srctime: srctime - 0.5 * 60 * 60
     fn_endtime_full = lambda srctime: srctime + 2 * 60 * 60 + 1
@@ -62,7 +63,7 @@ def download_event(downloader, origin_time, init_year=None, network=None, statio
         location_priorities=["", "00", "10"],
 
         # customized
-        # exclude_networks=("AM", "SY")
+        exclude_networks=exclude_networks,
         network=network,
         station=station
         )
@@ -85,16 +86,41 @@ if __name__ == '__main__':
     if str(sys.argv[1]).split('.')[-1] == 'npy':
         events = np.load(str(sys.argv[1]), allow_pickle=True)
         for event in events:
-            station = ",".join([station.labelsta['name'] for station in event.stations])
+            station_list = [station.labelsta['name'] for station in event.stations]
+            if event.srctime.year < 1995: continue
+            for station_code in station_list:
+                if len(glob.glob(f"./rawdata_{str(sys.argv[1]).split('.')[-2]}/{UTCDateTime(event.srctime, precision=3)}/stations/*{station_code}*")) > 0:
+                    station_list.remove(station_code)
+            station = ",".join(station_list)
             download_event(mdl, event.srctime, station=station, save_path=f"./rawdata_{str(sys.argv[1]).split('.')[-2]}", skip_existing_folder=True)
 
     else:
         events = np.load('./gcmt_mw.npy', allow_pickle=True)
         # origin_time = UTCDateTime(2011, 3, 11, 5, 47, 32)
         # origin_time = UTCDateTime("2011-01-01T01:56:07.800000Z")
-        network = 'AF,AU,BI,BR,C,C8,CB,CD,CK,CN,CR,DK,DW,G,GE,GT,HG,IA,IC,ID,II,IM,IN,IU,MM,MN,MP,MY,NZ,PS,SR,TJ'
+        if str(sys.argv[2]) == 'not_usta':
+            network = None
+            station = None
+            exclude_networks = ("AM", "SY", "US", "TA")
+            print("exclude networks: ", exclude_networks)
+        elif str(sys.argv[2]) == 'usta':
+            network = 'US,TA'
+            station = None
+            exclude_networks = ("AM", "SY")
+            print("network: ", network)
+        else:
+            # network = 'AF,AU,BI,BR,C,C8,CB,CD,CK,CN,CR,DK,DW,G,GE,GT,HG,IA,IC,ID,II,IM,IN,IU,MM,MN,MP,MY,NZ,PS,SR,TJ'
+            network = str(sys.argv[2])
+            station = None
+            exclude_networks = ("AM", "SY")
+            print("network: ", network)
 
-        
         for event in events[init_event_num[int(sys.argv[1])]:init_event_num[int(sys.argv[1])+1]]: 
             if event.magnitude < 5.5: continue
-            download_event(mdl, event.srctime, int(sys.argv[1]), network=network, save_path="./rawdata_catalog_mass", skip_existing_folder=True)
+            # download_event(mdl, event.srctime, int(sys.argv[1]), network=network, save_path="./rawdata_catalog_mass", skip_existing_folder=True)
+            download_event(mdl, event.srctime, int(sys.argv[1]),
+                network=network,
+                station=station,
+                exclude_networks=exclude_networks,
+                save_path=f"./rawdata_catalog_mass_{str(sys.argv[2])}",
+                skip_existing_folder=True)
